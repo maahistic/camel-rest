@@ -18,8 +18,10 @@ package sample.camel;
 
 import java.util.TimeZone;
 
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -29,16 +31,17 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class RestRoute extends RouteBuilder {
-	
+
+	@Autowired
+	Processor processor;
+
 
 	@Override
 	public void configure() throws Exception {
-		
-		TimeZone.setDefault(TimeZone.getTimeZone("IND/Sydney"));
 
 		restConfiguration().component("servlet").bindingMode(RestBindingMode.auto);
 
-		//http://localhost:8080/camel/rest/mahi
+		//http://localhost:8080/camel/rest/mahi to see the result
 		
 		rest().path("/rest").consumes("application/json").produces("application/json")
 				.get("{name}")
@@ -50,6 +53,7 @@ public class RestRoute extends RouteBuilder {
 				.get("log").to("direct:log");
 		
 		from("direct:log")
+				.process(processor)
 		.log("The log message");
 		
 		
